@@ -5,7 +5,7 @@ const session = require("express-session");
 const exphbs = require("express-handlebars");
 const path = require("path");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
-const sequelize = require("./config/sequelize"); // Corrected import
+const sequelize = require("./config/sequelize"); 
 const passport = require("./config/passport-config");
 
 // Import routes from controllers
