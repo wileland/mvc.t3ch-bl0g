@@ -1,0 +1,17 @@
+{{!-- Layout for the user dashboard where they can see their posts --}}
+<nav>
+  <a href="/">Home</a>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/logout">Logout</a>
+</nav>
+
+<h1>Dashboard</h1>
+
+{{#each userPosts as |post|}}
+  <div class="post">
+    <h3>{{post.title}}</h3>
+    <p>{{post.content}}</p>
+    <button class="edit-post">Edit</button>
+    <button class="delete-post">Delete</button>
+  </div>
+{{/each}}

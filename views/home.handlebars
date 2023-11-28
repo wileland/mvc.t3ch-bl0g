@@ -1,0 +1,20 @@
+{{!-- Layout for the homepage with navigation and blog posts --}}
+<nav>
+  <a href="/">Home</a>
+  <a href="/dashboard">Dashboard</a>
+  {{#if loggedIn}}
+    <a href="/logout">Logout</a>
+  {{else}}
+    <a href="/login">Login</a>
+  {{/if}}
+</nav>
+
+<h1>The Tech Blog</h1>
+
+{{#each posts as |post|}}
+  <article>
+    <h2>{{post.title}}</h2>
+    <p>{{post.summary}}</p>
+    <p>Posted by {{post.author}} on {{formatDate post.createdAt}}</p>
+  </article>
+{{/each}}

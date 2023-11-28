@@ -1,0 +1,10 @@
+{{!-- Individual blog post layout --}}
+<article>
+  <h2>{{title}}</h2>
+  <p>{{content}}</p>
+  <p>Posted by {{author}} on {{formatDate createdAt}}</p>
+  {{#if ownPost}}
+    <button class="edit-post">Edit</button>
+    <button class="delete-post">Delete</button>
+  {{/if}}
+</article>

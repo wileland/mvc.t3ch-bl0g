@@ -1,0 +1,16 @@
+{{!-- Comment section --}}
+{{#each comments as |comment|}}
+  <div class="comment">
+    <p>{{comment.content}}</p>
+    <p>Comment by {{comment.author}} on {{formatDate comment.createdAt}}</p>
+  </div>
+{{else}}
+  <p>No comments yet.</p>
+{{/each}}
+
+{{#if loggedIn}}
+  <form id="comment-form">
+    <textarea name="comment" placeholder="Leave a comment..."></textarea>
+    <button type="submit">Submit</button>
+  </form>
+{{/if}}
