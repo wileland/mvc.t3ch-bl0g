@@ -1,21 +1,19 @@
 require("dotenv").config();
-const config = require("./config");
-
 
 const express = require("express");
 const session = require("express-session");
 const exphbs = require("express-handlebars");
 const path = require("path");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
-const sequelize = require("./config/config"); // Import your Sequelize instance from a config file
+const sequelize = require("./config/sequelize"); // Corrected import
 const passport = require("./config/passport-config");
 
-// Import routes
-const userRoutes = require("./routes/api/users");
-const postRoutes = require("./routes/api/posts");
-const commentRoutes = require("./routes/api/comments");
+// Import routes from controllers
 const homeRoutes = require("./controllers/homeRoutes");
 const dashboardRoutes = require("./controllers/dashboardRoutes");
+const userRoutes = require("./controllers/api/user"); // Updated path
+const postRoutes = require("./controllers/api/posts"); // Updated path
+const commentRoutes = require("./controllers/api/comments"); // Updated path
 
 const app = express();
 const PORT = process.env.PORT || 3306;
@@ -42,13 +40,14 @@ const sess = {
 app.use(session(sess));
 
 // Set up Handlebars.js engine with custom helpers
-const hbs = exphbs.create({ helpers: require("./utils/helpers") });
+const helpers = require("./utils/helpers"); // Adjust the path to your helpers folder
+const hbs = exphbs.create({ helpers });
 app.engine("handlebars", hbs.engine);
 app.set("view engine", "handlebars");
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Define routes
+// Define routes using the updated paths
 app.use("/", homeRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/users", userRoutes);

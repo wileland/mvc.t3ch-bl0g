@@ -1,28 +1,19 @@
-const Sequelize = require("sequelize");
-const config = require("../config/config"); // Adjust the path as necessary
+const sequelize = require("../config/sequelize");
 
-// Create a Sequelize instance with database settings from config
-const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config
-);
+// Import models directly without invoking them as functions
+const User = require("./user");
+const Post = require("./post");
+const Comment = require("./comment");
 
+// Setup associations
+// Make sure these associate methods are defined in your model files
+User.associate({ Post, Comment });
+Post.associate({ User, Comment });
+Comment.associate({ User, Post });
 
-const User = require('./user')(sequelize, Sequelize.DataTypes);
-const Post = require('./post')(sequelize, Sequelize.DataTypes);
-const Comment = require('./comment')(sequelize, Sequelize.DataTypes);
-
-// Associations
-User.hasMany(Post, { foreignKey: 'userId' });
-Post.belongsTo(User, { foreignKey: 'userId' });
-
-Post.hasMany(Comment, { foreignKey: 'postId' });
-Comment.belongsTo(Post, { foreignKey: 'postId' });
-
-User.hasMany(Comment, { foreignKey: 'userId' });
-Comment.belongsTo(User, { foreignKey: 'userId' });
-
-module.exports = { sequelize, User, Post, Comment };
-
+module.exports = {
+  sequelize,
+  User,
+  Post,
+  Comment,
+};

@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { UserAdditionalData } = require("../../models");
+const models = require("../models"); // Import all models
+
+// Accessing models
+const { User, UserAdditionalData } = models; // Include UserAdditionalData here
 
 // Define the authenticate middleware here
 function authenticate(req, res, next) {
@@ -107,6 +110,40 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Protected route that requires authentication
+router.get("/dashboard/profile", authenticate, async (req, res) => {
+  try {
+    // Access the authenticated user's information
+    const user = req.user;
+
+    // Fetch additional user data from the database
+    const additionalUserData = await UserAdditionalData.fetchAdditionalUserData(
+      user.id
+    );
+
+    // Combine user data with additional data
+    const userDataWithAdditional = {
+      ...user,
+      ...additionalUserData,
+    };
+
+    // Return the combined data as JSON
+    res.json(userDataWithAdditional);
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Dashboard route to display user-specific data
+router.get("/", async (req, res) => {
+  try {
+    // ... your existing code ...
+  } catch (err) {
+    // ... your existing error handling code ...
   }
 });
 

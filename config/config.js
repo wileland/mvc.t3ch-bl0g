@@ -1,4 +1,3 @@
-const config = require("./config");
 require("dotenv").config();
 
 module.exports = {
@@ -8,11 +7,8 @@ module.exports = {
     database: process.env.DB_NAME,
     host: "localhost",
     dialect: "mysql",
-    secretKey: process.env.JWT_SECRET, 
-
-  // Other configuration settings...
-};
-
+    secretKey: process.env.JWT_SECRET,
+    // Other configuration settings...
   },
   test: {
     // Test environment settings

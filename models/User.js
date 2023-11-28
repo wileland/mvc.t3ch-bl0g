@@ -1,26 +1,40 @@
-const Sequelize = require("sequelize");
-const config = require("../config/config.js");
+const { Model, DataTypes } = require("sequelize");
+const bcrypt = require("bcrypt");
+const sequelize = require("../config/sequelize"); // make sure the path is correct
 
+class User extends Model {
+  // Instance method to check password validity
+  checkPassword(password) {
+    return bcrypt.compare(password, this.password);
+  }
+}
 
-const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config
+User.init(
+  {
+    // Define attributes like username, email, etc.
+    username: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
+    // Other attributes...
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    // ... any other attributes you have
+  },
+  {
+    sequelize, // Pass the sequelize instance
+    modelName: "User",
+    // ... any other model options
+  }
 );
 
-const User = require("./user")(sequelize, Sequelize.DataTypes);
-const Post = require("./post")(sequelize, Sequelize.DataTypes);
-const Comment = require("./comment")(sequelize, Sequelize.DataTypes);
+// Associations can be defined outside the class
+User.associate = function (models) {
+  User.hasMany(models.Post, { foreignKey: "userId" });
+  User.hasMany(models.Comment, { foreignKey: "userId" });
+};
 
-// Define associations here
-User.hasMany(Post, { foreignKey: "userId" });
-Post.belongsTo(User, { foreignKey: "userId" });
-
-User.hasMany(Comment, { foreignKey: "userId" });
-Comment.belongsTo(User, { foreignKey: "userId" });
-
-Post.hasMany(Comment, { foreignKey: "postId" });
-Comment.belongsTo(Post, { foreignKey: "postId" });
-
-module.exports = { sequelize, User, Post, Comment };
+module.exports = User;

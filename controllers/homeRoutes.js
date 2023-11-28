@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const config = require("../../config/config");
+const config = require("../config/config");
 
 const { Post, User } = require("../models");
 // Additional imports, such as middleware to check for authentication, may be required.

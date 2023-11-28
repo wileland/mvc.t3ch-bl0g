@@ -1,5 +1,5 @@
 const { Model, DataTypes } = require("sequelize");
-const sequelize = require("../config/config");
+const sequelize = require("../config/sequelize"); // Corrected import
 
 class Comment extends Model {}
 
@@ -12,14 +12,14 @@ Comment.init(
     userId: {
       type: DataTypes.INTEGER,
       references: {
-        model: "User",
+        model: "User", // Note: This should match the table name of the User model
         key: "id",
       },
     },
     postId: {
       type: DataTypes.INTEGER,
       references: {
-        model: "Post",
+        model: "Post", // Note: This should match the table name of the Post model
         key: "id",
       },
     },
@@ -31,5 +31,14 @@ Comment.init(
     underscored: true,
   }
 );
+
+// Associations can be defined outside the class
+Comment.associate = function (models) {
+  // Define associations here
+  // Example: Comment belongs to User
+  Comment.belongsTo(models.User, { foreignKey: "userId" });
+  // Example: Comment belongs to Post
+  Comment.belongsTo(models.Post, { foreignKey: "postId" });
+};
 
 module.exports = Comment;
