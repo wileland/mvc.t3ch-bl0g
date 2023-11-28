@@ -1,0 +1,2 @@
+DROP DATABASE IF EXISTS 't3ch bl0g';
+CREATE DATABASE 't3ch bl0g';
