@@ -6,6 +6,14 @@ const exphbs = require("express-handlebars");
 const path = require("path");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const sequelize = require("./config/config"); // Import your Sequelize instance from a config file
+const passport = require("./config/passport-config");
+
+// Import routes
+const userRoutes = require("./routes/api/users");
+const postRoutes = require("./routes/api/posts");
+const commentRoutes = require("./routes/api/comments");
+const homeRoutes = require("./controllers/homeRoutes");
+const dashboardRoutes = require("./controllers/dashboardRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,19 +46,15 @@ app.set("view engine", "handlebars");
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Import routes
-const userRoutes = require("./routes/api/users");
-const postRoutes = require("./routes/api/posts");
-const commentRoutes = require("./routes/api/comments");
-const homeRoutes = require("./controllers/homeRoutes");
-const dashboardRoutes = require("./controllers/dashboardRoutes");
-
-// Use routes
+// Define routes
 app.use("/", homeRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // 404 Not Found Handler
 app.use((req, res, next) => {
