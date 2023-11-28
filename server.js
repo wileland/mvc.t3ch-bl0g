@@ -11,9 +11,9 @@ const passport = require("./config/passport-config");
 // Import routes from controllers
 const homeRoutes = require("./controllers/homeRoutes");
 const dashboardRoutes = require("./controllers/dashboardRoutes");
-const userRoutes = require("./controllers/api/user"); // Updated path
-const postRoutes = require("./controllers/api/posts"); // Updated path
-const commentRoutes = require("./controllers/api/comments"); // Updated path
+const userRoutes = require("./controllers/api/userRoutes"); // Updated path
+const postRoutes = require("./controllers/api/postRoutes"); // Updated path
+const commentRoutes = require("./controllers/api/commentRoutes"); // Updated path
 
 const app = express();
 const PORT = process.env.PORT || 3306;

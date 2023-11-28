@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const models = require("../models"); // Import all models
 
 // Accessing models
-const { User, UserAdditionalData } = models; // Include UserAdditionalData here
+const { User, UserAdditionalData } = models; // Include User and UserAdditionalData here
 
 // Define the authenticate middleware here
 function authenticate(req, res, next) {
@@ -28,9 +28,6 @@ function authenticate(req, res, next) {
     next();
   });
 }
-
-// Import the User model (assuming you have a User model)
-const { User } = require("../../models");
 
 // Route for login
 router.get("/login", (req, res) => {
@@ -82,7 +79,7 @@ router.get("/dashboard/profile", authenticate, async (req, res) => {
 });
 
 // Dashboard route to display user-specific data
-router.get("/", async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
   try {
     // Check if the user is authenticated (you can use middleware for this)
     if (!req.session.loggedIn) {
@@ -106,44 +103,10 @@ router.get("/", async (req, res) => {
     }
 
     // Render a dashboard view with user data and additionalUserData
-    res.render("dashboard", { user, additionalUserData });
+    res.render("dashboard", { user: req.user, additionalUserData });
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-// Protected route that requires authentication
-router.get("/dashboard/profile", authenticate, async (req, res) => {
-  try {
-    // Access the authenticated user's information
-    const user = req.user;
-
-    // Fetch additional user data from the database
-    const additionalUserData = await UserAdditionalData.fetchAdditionalUserData(
-      user.id
-    );
-
-    // Combine user data with additional data
-    const userDataWithAdditional = {
-      ...user,
-      ...additionalUserData,
-    };
-
-    // Return the combined data as JSON
-    res.json(userDataWithAdditional);
-  } catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-// Dashboard route to display user-specific data
-router.get("/", async (req, res) => {
-  try {
-    // ... your existing code ...
-  } catch (err) {
-    // ... your existing error handling code ...
   }
 });
 
