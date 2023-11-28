@@ -1,23 +1,15 @@
-{
-  "development": {
-    "username": "root",
-    "password": null,
-    "database": "database_development",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+module.exports = {
+  development: {
+    username: "root",
+    password: "B30wulf7", 
+    database: "t3ch_bl0g",
+    host: "127.0.0.1",
+    dialect: "mysql",
   },
-  "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+  test: {
+    // Test environment settings
   },
-  "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
-  }
-}
+  production: {
+    // Production environment settings
+  },
+};
