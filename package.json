@@ -4,7 +4,7 @@
   "description": "Tech Blog Application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",  // Use nodemon to start the server
     "seed": "npx sequelize-cli db:seed:all",
     "migrate": "npx sequelize-cli db:migrate"
   },

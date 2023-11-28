@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+const { UserAdditionalData } = require("../../models");
+
+// Define the authenticate middleware here
 function authenticate(req, res, next) {
   // Extract the token from the request headers
   const token = req.headers.authorization;
@@ -8,8 +12,8 @@ function authenticate(req, res, next) {
     return res.status(401).json({ message: "Authentication required" });
   }
 
-  // Verify the token using the secret key
-  jwt.verify(token, config.secretKey, (err, decoded) => {
+  // Verify the token using the JWT secret key from environment variables
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).json({ message: "Invalid token" });
     }
@@ -22,29 +26,57 @@ function authenticate(req, res, next) {
   });
 }
 
-module.exports = { authenticate };
-
-
 // Import the User model (assuming you have a User model)
 const { User } = require("../../models");
 
-// Import necessary modules and dependencies
+// Route for login
+router.get("/login", (req, res) => {
+  // Check if the user is already authenticated
+  if (req.session.loggedIn) {
+    // Redirect to the dashboard if the user is logged in
+    return res.redirect("/dashboard/profile");
+  }
 
-const { authenticate } = require("./auth"); // Import the authenticate middleware
-
-// Define your routes
-
-router.get("/dashboard/profile", authenticate, (req, res) => {
-  // This route is protected and requires authentication
-  // Access the authenticated user's information
-  const user = req.user;
-
-  // Your route logic here...
-
-  res.json({ message: "Protected dashboard route", user });
+  // Render the login page (create a login.handlebars view)
+  res.render("login");
 });
 
+// Route for signup
+router.get("/signup", (req, res) => {
+  // Check if the user is already authenticated
+  if (req.session.loggedIn) {
+    // Redirect to the dashboard if the user is logged in
+    return res.redirect("/dashboard/profile");
+  }
 
+  // Render the signup page (create a signup.handlebars view)
+  res.render("signup");
+});
+
+// Protected route that requires authentication
+router.get("/dashboard/profile", authenticate, async (req, res) => {
+  try {
+    // Access the authenticated user's information
+    const user = req.user;
+
+    // Fetch additional user data from the database
+    const additionalUserData = await UserAdditionalData.fetchAdditionalUserData(
+      user.id
+    );
+
+    // Combine user data with additional data
+    const userDataWithAdditional = {
+      ...user,
+      ...additionalUserData,
+    };
+
+    // Return the combined data as JSON
+    res.json(userDataWithAdditional);
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 // Dashboard route to display user-specific data
 router.get("/", async (req, res) => {
@@ -57,18 +89,24 @@ router.get("/", async (req, res) => {
 
     // Retrieve the logged-in user's data (assuming you store user ID in the session)
     const userId = req.session.userId;
-    const user = await User.findByPk(userId);
 
-    if (!user) {
-      // Handle the case where the user doesn't exist
-      return res.status(404).json({ message: "User not found" });
+    // Use the UserAdditionalData model to get additional user data
+    const additionalUserData = await UserAdditionalData.findOne({
+      where: { userId }, // Find data associated with the logged-in user
+    });
+
+    if (!additionalUserData) {
+      // Handle the case where additional user data doesn't exist
+      return res
+        .status(404)
+        .json({ message: "Additional user data not found" });
     }
 
-    // Render a dashboard view with user data
-    res.render("dashboard", { user });
+    // Render a dashboard view with user data and additionalUserData
+    res.render("dashboard", { user, additionalUserData });
   } catch (err) {
     console.error("Error:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

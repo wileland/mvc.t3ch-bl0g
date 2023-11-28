@@ -2,6 +2,10 @@ const express = require("express");
 const { Post } = require("../../models");
 const router = express.Router();
 
+const config = require("../../config/config");
+
+
+
 function authenticate(req, res, next) {
   // Extract the token from the request headers
   const token = req.headers.authorization;

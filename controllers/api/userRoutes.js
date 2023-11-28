@@ -1,4 +1,4 @@
-const config = require("./config");
+const config = require("../../config/config");
 
 const express = require("express");
 const bcrypt = require("bcrypt");
@@ -32,7 +32,6 @@ router.get("/profile", authenticate, (req, res) => {
 
   res.json({ message: "Protected route", user });
 });
-
 
 // Retrieve a user by ID
 router.get("/:id", async (req, res) => {
