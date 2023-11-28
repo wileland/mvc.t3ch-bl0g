@@ -2,11 +2,32 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const config = require("./config");
-const { User } = require("../models"); // Assuming you have a User model
+const { User } = require("../models");
 const bcrypt = require("bcrypt");
 
-// Import the authentication middleware
-const { authenticate } = require("./authentication");
+// Define the authenticate middleware here
+function authenticate(req, res, next) {
+  // Sample authentication logic:
+  // For demonstration purposes, we'll assume authentication is based on a JWT token.
+  const token = req.header("x-auth-token");
+
+  if (!token) {
+    return res.status(401).json({ message: "No token, authorization denied" });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, config.secretKey);
+
+    // Attach the user ID to the request for later use
+    req.user = decoded.id;
+
+    // Continue to the next middleware or route
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Token is not valid" });
+  }
+}
 
 // Route for login
 router.post("/login", async (req, res) => {
@@ -74,4 +95,4 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = { authenticate, router };

@@ -21,7 +21,7 @@ function generateAuthToken(user) {
   return token;
 }
 
-const { authenticate } = require("./auth");
+const { authenticate } = require("../../config/auth");
 
 // Protected route that requires authentication
 router.get("/profile", authenticate, (req, res) => {

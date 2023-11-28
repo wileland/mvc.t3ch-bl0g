@@ -16,7 +16,7 @@ const postRoutes = require("./controllers/api/postRoutes"); // Updated path
 const commentRoutes = require("./controllers/api/commentRoutes"); // Updated path
 
 const app = express();
-const PORT = process.env.PORT || 3306;
+const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON and urlencoded data
 app.use(express.json());
