@@ -9,26 +9,20 @@ const sequelize = new Sequelize(
   config
 );
 
-// Import models
-const User = require("./user")(sequelize, Sequelize.DataTypes);
-const Post = require("./post")(sequelize, Sequelize.DataTypes);
-const Comment = require("./comment")(sequelize, Sequelize.DataTypes);
+
+const User = require('./user')(sequelize, Sequelize.DataTypes);
+const Post = require('./post')(sequelize, Sequelize.DataTypes);
+const Comment = require('./comment')(sequelize, Sequelize.DataTypes);
 
 // Associations
-User.hasMany(Post, { foreignKey: "userId", as: "posts" });
-Post.belongsTo(User, { foreignKey: "userId", as: "user" });
+User.hasMany(Post, { foreignKey: 'userId' });
+Post.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Comment, { foreignKey: "userId", as: "comments" });
-Comment.belongsTo(User, { foreignKey: "userId", as: "user" });
+Post.hasMany(Comment, { foreignKey: 'postId' });
+Comment.belongsTo(Post, { foreignKey: 'postId' });
 
-Post.hasMany(Comment, { foreignKey: "postId", as: "comments" });
-Comment.belongsTo(Post, { foreignKey: "postId", as: "post" });
+User.hasMany(Comment, { foreignKey: 'userId' });
+Comment.belongsTo(User, { foreignKey: 'userId' });
 
-// Export models and sequelize instance
-module.exports = {
-  sequelize,
-  Sequelize,
-  User,
-  Post,
-  Comment,
-};
+module.exports = { sequelize, User, Post, Comment };
+
