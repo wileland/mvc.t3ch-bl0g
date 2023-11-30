@@ -2,11 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
-const passport = require("passport");
 
 // Middleware to check if the user is authenticated
-function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
+function withAuth(req, res, next) {
+  if (req.session.loggedIn) {
     return next();
   }
   // If not authenticated, redirect to the login page
@@ -14,9 +13,24 @@ function isAuthenticated(req, res, next) {
 }
 
 // Route for login
-router.post("/login", passport.authenticate("local"), (req, res) => {
-  // After successful authentication, redirect to the desired page
-  res.redirect("/dashboard");
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ where: { username } });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    req.session.save(() => {
+      req.session.loggedIn = true;
+      req.session.user_id = user.id; // Save only user ID to the session
+      res.redirect("/dashboard");
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 // Route for signup
@@ -48,5 +62,19 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Export the router and isAuthenticated middleware
-module.exports = { isAuthenticated, router };
+// Logout route
+router.post("/logout", (req, res) => {
+  if (req.session.loggedIn) {
+    req.session.destroy(() => {
+      res.redirect("/login");
+    });
+  } else {
+    res.status(404).end();
+  }
+});
+
+// Export the router and withAuth middleware
+module.exports = { withAuth, router };
+
+
+

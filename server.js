@@ -76,6 +76,11 @@ sequelize
     console.log(
       "Connection to the database has been established successfully."
     );
+    // Sync models with the database
+    return sequelize.sync(); // You might use { force: true } during development
+  })
+  .then(() => {
+    // Start the Express server
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
