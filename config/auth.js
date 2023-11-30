@@ -1,64 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const config = require("./config");
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
+const passport = require("passport");
 
-// Define the authenticate middleware here
-function authenticate(req, res, next) {
-  // Sample authentication logic:
-  // For demonstration purposes, we'll assume authentication is based on a JWT token.
-  const token = req.header("x-auth-token");
-
-  if (!token) {
-    return res.status(401).json({ message: "No token, authorization denied" });
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
   }
-
-  try {
-    // Verify the token
-    const decoded = jwt.verify(token, config.secretKey);
-
-    // Attach the user ID to the request for later use
-    req.user = decoded.id;
-
-    // Continue to the next middleware or route
-    next();
-  } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
-  }
+  // If not authenticated, redirect to the login page
+  res.redirect("/login");
 }
 
 // Route for login
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    // Check if the user exists in the database
-    const user = await User.findOne({ where: { username } });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    // Compare the provided password with the hashed password in the database
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    // If the credentials are valid, create a JWT token
-    const token = jwt.sign({ id: user.id }, config.secretKey, {
-      expiresIn: "1h", // Token expires in 1 hour (adjust as needed)
-    });
-
-    // Send the token in the response
-    res.json({ token });
-  } catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
+router.post("/login", passport.authenticate("local"), (req, res) => {
+  // After successful authentication, redirect to the desired page
+  res.redirect("/dashboard");
 });
 
 // Route for signup
@@ -74,25 +32,21 @@ router.post("/signup", async (req, res) => {
     }
 
     // Hash the password before storing it
-    const hashedPassword = await bcrypt.hash(password, 10); // You can adjust the salt rounds
+    const hashedPassword = await bcrypt.hash(password, 10); // Adjust the salt rounds as needed
 
     // Create a new user in the database
-    const newUser = await User.create({
+    await User.create({
       username,
       password: hashedPassword,
     });
 
-    // If user creation is successful, create a JWT token
-    const token = jwt.sign({ id: newUser.id }, config.secretKey, {
-      expiresIn: "1h", // Token expires in 1 hour (adjust as needed)
-    });
-
-    // Send the token in the response
-    res.json({ token });
+    // Redirect to the login page after successful signup
+    res.redirect("/login");
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-module.exports = { authenticate, router };
+// Export the router and isAuthenticated middleware
+module.exports = { isAuthenticated, router };

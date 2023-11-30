@@ -64,9 +64,32 @@ app.use((req, res, next) => {
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
+  // Log the error for internal tracking
   console.error("Error:", err);
-  res.status(500).send("Server error");
+
+  // Determine the status code: use the status code from the error if it exists, otherwise default to 500
+  const statusCode = err.status || 500;
+
+  // Create a response object
+  let errorResponse = {
+    status: "error",
+    message: "An unexpected error occurred",
+  };
+
+  // Provide more details in development environment
+  if (process.env.NODE_ENV === "development") {
+    errorResponse = {
+      ...errorResponse,
+      message: err.message,
+      stack: err.stack,
+    };
+  }
+
+  // Respond to the client
+  res.status(statusCode).json(errorResponse);
 });
+
+// ...
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

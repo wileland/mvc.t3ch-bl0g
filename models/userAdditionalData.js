@@ -1,37 +1,42 @@
-// UserAdditionalData.js
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database"); // Correct the path as needed
 
-const { Sequelize, DataTypes } = require("sequelize");
-const { sequelize } = require("../config/database"); // Import your existing sequelize instance
-
-const UserAdditionalData = sequelize.define("UserAdditionalData", {
-  // Define the fields for your additional user data
-  field1: {
-    type: DataTypes.STRING,
-    allowNull: true, // Adjust as needed
+const UserAdditionalData = sequelize.define(
+  "UserAdditionalData",
+  {
+    // Example fields (rename these according to actual use case)
+    bio: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    birthDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    // Add more fields as needed
   },
-  field2: {
-    type: DataTypes.INTEGER,
-    allowNull: true, // Adjust as needed
-  },
-  // Add more fields as needed
-});
+  {
+    timestamps: true, // Add this if you want timestamps (createdAt, updatedAt)
+    underscored: true, // Consistent with other model conventions
+  }
+);
 
-// Define associations if this model is related to the User model
+// Associations
 UserAdditionalData.associate = (models) => {
   UserAdditionalData.belongsTo(models.User, { foreignKey: "userId" });
 };
 
-// Define the function to fetch additional user data
+// Fetch additional user data function
 UserAdditionalData.fetchAdditionalUserData = async function (userId) {
   try {
-    // Use Sequelize to query the database and retrieve additional user data
-    const additionalUserData = await this.findOne({
-      where: { userId }, // Adjust this condition based on your database schema
-    });
-
+    const additionalUserData = await this.findOne({ where: { userId } });
+    if (!additionalUserData) {
+      throw new Error("User additional data not found");
+    }
     return additionalUserData;
   } catch (error) {
-    throw new Error("Error fetching additional user data: " + error.message);
+    console.error("Fetch Additional User Data Error:", error);
+    throw error; // Rethrow the error to be handled by the caller
   }
 };
 

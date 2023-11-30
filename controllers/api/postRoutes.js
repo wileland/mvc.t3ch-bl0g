@@ -2,34 +2,13 @@ const express = require("express");
 const { Post } = require("../../models");
 const router = express.Router();
 
-const config = require("../../config/config");
-
-
-
-function authenticate(req, res, next) {
-  // Extract the token from the request headers
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ message: "Authentication required" });
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.session.loggedIn) {
+    return next();
   }
-
-  // Verify the token using the secret key
-  jwt.verify(token, config.secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-
-    // Attach the decoded user information to the request for future use
-    req.user = decoded;
-
-    // Continue to the next middleware or route handler
-    next();
-  });
+  res.status(401).json({ message: "Authentication required" });
 }
-
-module.exports = { authenticate };
-
 
 // Get all posts
 router.get("/", async (req, res) => {
@@ -37,7 +16,8 @@ router.get("/", async (req, res) => {
     const posts = await Post.findAll();
     res.json(posts);
   } catch (err) {
-    res.status(500).json(err);
+    console.error("Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -58,13 +38,12 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create a new post
-router.post("/", async (req, res) => {
+// Create a new post - only authenticated users can create posts
+router.post("/", isAuthenticated, async (req, res) => {
   try {
-    // Extract post data from the request body
-    const { title, content, userId } = req.body;
+    const { title, content } = req.body;
+    const userId = req.session.user.id; // Assuming userId is stored in session
 
-    // Implement logic to create a new post
     const newPost = await Post.create({
       title,
       content,
@@ -73,15 +52,14 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(newPost);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error creating a post" });
+    console.error("Error:", err);
+    res.status(500).json({ message: "Error creating a post" });
   }
 });
 
-// Update a post by ID
-router.put("/:id", async (req, res) => {
+// Update a post by ID - only authenticated users can update posts
+router.put("/:id", isAuthenticated, async (req, res) => {
   try {
-    // Extract post data from the request body
     const { title, content } = req.body;
     const postId = req.params.id;
     const post = await Post.findByPk(postId);
@@ -90,11 +68,8 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Update post properties
     post.title = title;
     post.content = content;
-
-    // Save the updated post
     await post.save();
 
     res.json(post);
@@ -104,8 +79,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Delete a post by ID
-router.delete("/:id", async (req, res) => {
+// Delete a post by ID - only authenticated users can delete posts
+router.delete("/:id", isAuthenticated, async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await Post.findByPk(postId);
@@ -114,9 +89,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Delete the post from the database
     await post.destroy();
-
     res.json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error("Error:", err);
