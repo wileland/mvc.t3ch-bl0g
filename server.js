@@ -4,12 +4,12 @@ import session from 'express-session';
 import exphbs from 'express-handlebars';
 import path from 'path';
 import connectSessionSequelize from 'connect-session-sequelize';
-import sequelize from './config/sequelize';
-import homeRoutes from './controllers/homeRoutes';
-import dashboardRoutes from './controllers/dashboardRoutes';
-import userRoutes from './controllers/api/userRoutes';
-import postRoutes from './controllers/api/postRoutes';
-import commentRoutes from './controllers/api/commentRoutes';
+import sequelize from './config/sequelize.js';
+import homeRoutes from './controllers/homeRoutes.js';
+import dashboardRoutes from './controllers/dashboardRoutes.js';
+import userRoutes from './controllers/api/userRoutes.js';
+import postRoutes from './controllers/api/postRoutes.js';
+import commentRoutes from './controllers/api/commentRoutes.js';
 import helpers from './utils/helpers';
 
 const SequelizeStore = connectSessionSequelize(session.Store);
