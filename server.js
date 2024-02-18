@@ -1,95 +1,72 @@
-require("dotenv").config();
+import 'dotenv/config';
+import express from 'express';
+import session from 'express-session';
+import exphbs from 'express-handlebars';
+import path from 'path';
+import connectSessionSequelize from 'connect-session-sequelize';
+import sequelize from './config/sequelize';
+import homeRoutes from './controllers/homeRoutes';
+import dashboardRoutes from './controllers/dashboardRoutes';
+import userRoutes from './controllers/api/userRoutes';
+import postRoutes from './controllers/api/postRoutes';
+import commentRoutes from './controllers/api/commentRoutes';
+import helpers from './utils/helpers';
 
-const express = require("express");
-const session = require("express-session");
-const exphbs = require("express-handlebars");
-const path = require("path");
-const SequelizeStore = require("connect-session-sequelize")(session.Store);
-const sequelize = require("./config/sequelize");
-
+const SequelizeStore = connectSessionSequelize(session.Store);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON and urlencoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session store setup
 const sess = {
   secret: process.env.SESSION_SECRET,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 1800000,
   },
   resave: false,
   saveUninitialized: true,
-  store: new SequelizeStore({
-    db: sequelize,
-  }),
+  store: new SequelizeStore({ db: sequelize }),
 };
 
 app.use(session(sess));
 
-// Set up Handlebars.js engine with custom helpers
-const helpers = require("./utils/helpers");
 const hbs = exphbs.create({ helpers });
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(path.resolve(), 'public')));
 
-// Define routes
-app.use("/", homeRoutes);
-app.use("/dashboard", dashboardRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/comments", commentRoutes);
+app.use('/', homeRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 
-// 404 Not Found Handler
-app.use((req, res, next) => {
-  res.status(404).send("404: Page not found");
+app.use((req, res) => {
+  res.status(404).send('404: Page not found');
 });
 
-// Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error("Error:", err);
+app.use((err, req, res) => {
+  console.error('Error:', err);
   const statusCode = err.status || 500;
-  let errorResponse = {
-    status: "error",
-    message: "An unexpected error occurred",
-  };
-  if (process.env.NODE_ENV === "development") {
-    errorResponse = {
-      ...errorResponse,
-      message: err.message,
-      stack: err.stack,
-    };
+  let errorResponse = { status: 'error', message: 'An unexpected error occurred' };
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse = { ...errorResponse, message: err.message, stack: err.stack };
   }
   res.status(statusCode).json(errorResponse);
 });
 
-// Database Connection and Server Initialization
-sequelize
-  .authenticate()
+sequelize.authenticate()
   .then(() => {
-    console.log(
-      "Connection to the database has been established successfully."
-    );
-    // Sync models with the database
-    return sequelize.sync(); // You might use { force: true } during development
+    console.log('Connection to the database has been established successfully.');
+    return sequelize.sync();
   })
   .then(() => {
-    // Start the Express server
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
-  .catch((err) => {
-    console.error("Unable to connect to the database:", err);
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
   });
-
-// Import routes from controllers
-const homeRoutes = require("./controllers/homeRoutes");
-const dashboardRoutes = require("./controllers/dashboardRoutes");
-const userRoutes = require("./controllers/api/userRoutes");
-const postRoutes = require("./controllers/api/postRoutes");
-const commentRoutes = require("./controllers/api/commentRoutes");
